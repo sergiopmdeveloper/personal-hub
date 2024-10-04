@@ -1,3 +1,6 @@
 # Package files
 package.json
 package-lock.json
+
+# UI components
+app/components/ui

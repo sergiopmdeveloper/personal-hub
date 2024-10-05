@@ -8,6 +8,7 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import { Loader } from 'lucide-react';
+import { FormError } from '~/components/global/form-error';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -42,7 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!result.success) {
     return json(
       {
-        errors: result.error.flatten().fieldErrors,
+        fieldErrors: result.error.flatten().fieldErrors,
         invalidCredentials: false,
         unknownError: false,
       },
@@ -60,13 +61,13 @@ export async function action({ request }: ActionFunctionArgs) {
   if (error) {
     if (error.code === 'invalid_credentials') {
       return json(
-        { errors: null, invalidCredentials: true, unknownError: false },
+        { fieldErrors: null, invalidCredentials: true, unknownError: false },
         { status: 403 }
       );
     }
 
     return json(
-      { errors: null, invalidCredentials: false, unknownError: true },
+      { fieldErrors: null, invalidCredentials: false, unknownError: true },
       { status: 520 }
     );
   }
@@ -82,8 +83,8 @@ export default function SignIn() {
   const actionData = useActionData<typeof action>();
 
   const sending = state === 'submitting';
-  const emailErrors = actionData?.errors?.email;
-  const passwordErrors = actionData?.errors?.password;
+  const emailErrors = actionData?.fieldErrors?.email;
+  const passwordErrors = actionData?.fieldErrors?.password;
   const invalidCredentials = actionData?.invalidCredentials;
   const unknownError = actionData?.unknownError;
 
@@ -105,9 +106,7 @@ export default function SignIn() {
               autoComplete="email"
             />
 
-            {emailErrors && (
-              <p className="text-xs text-red-500">{emailErrors[0]}</p>
-            )}
+            {emailErrors && <FormError>{emailErrors[0]}</FormError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -123,29 +122,25 @@ export default function SignIn() {
               autoComplete="current-password"
             />
 
-            {passwordErrors && (
-              <p className="text-xs text-red-500">{passwordErrors[0]}</p>
-            )}
+            {passwordErrors && <FormError>{passwordErrors[0]}</FormError>}
           </div>
 
-          <p className="text-xs">
-            Don't have an account?{' '}
-            <Link className="text-blue-600 underline" to="/sign-up">
-              Sign up
-            </Link>
-          </p>
-
           {invalidCredentials && (
-            <p className="text-xs text-red-500">
-              Invalid email or password. Please try again.
-            </p>
+            <FormError>Invalid email or password. Please try again.</FormError>
           )}
 
           {unknownError && (
-            <p className="text-xs text-red-500">
+            <FormError>
               An unknown error occurred. Please try again later.
-            </p>
+            </FormError>
           )}
+
+          <p className="text-xs">
+            Don't have an account?{' '}
+            <Link className="text-blue-500 underline" to="/sign-up">
+              Sign up
+            </Link>
+          </p>
 
           <Button type="submit" disabled={sending}>
             {sending ? 'Sending...' : 'Send'}

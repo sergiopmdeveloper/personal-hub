@@ -1,9 +1,18 @@
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
-import { Form, json, Link, useActionData } from '@remix-run/react';
+import {
+  Form,
+  json,
+  Link,
+  redirect,
+  useActionData,
+  useNavigation,
+} from '@remix-run/react';
+import { Loader } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { cn } from '~/lib/utils';
+import { createSupabaseServerClient } from '~/supabase/server';
 import { SignInSchema } from '~/validation/sign-in';
 
 /**
@@ -25,29 +34,58 @@ export const meta: MetaFunction = () => {
 export async function action({ request }: ActionFunctionArgs) {
   const body = await request.formData();
 
-  const email = body.get('email');
-  const password = body.get('password');
+  const email = body.get('email') as string;
+  const password = body.get('password') as string;
 
   const result = SignInSchema.safeParse({ email, password });
 
   if (!result.success) {
     return json(
-      { errors: result.error.flatten().fieldErrors },
+      {
+        errors: result.error.flatten().fieldErrors,
+        invalidCredentials: false,
+        unknownError: false,
+      },
       { status: 400 }
     );
   }
 
-  return json({ errors: null }, { status: 200 });
+  const { supabase, headers } = createSupabaseServerClient(request);
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+  });
+
+  if (error) {
+    if (error.code === 'invalid_credentials') {
+      return json(
+        { errors: null, invalidCredentials: true, unknownError: false },
+        { status: 403 }
+      );
+    }
+
+    return json(
+      { errors: null, invalidCredentials: false, unknownError: true },
+      { status: 520 }
+    );
+  }
+
+  return redirect('/user', { headers });
 }
 
 /**
  * Sign in page
  */
 export default function SignIn() {
+  const { state } = useNavigation();
   const actionData = useActionData<typeof action>();
 
+  const sending = state === 'submitting';
   const emailErrors = actionData?.errors?.email;
   const passwordErrors = actionData?.errors?.password;
+  const invalidCredentials = actionData?.invalidCredentials;
+  const unknownError = actionData?.unknownError;
 
   return (
     <main className="flex h-screen w-screen items-center justify-center">
@@ -97,7 +135,22 @@ export default function SignIn() {
             </Link>
           </p>
 
-          <Button type="submit">Send</Button>
+          {invalidCredentials && (
+            <p className="text-xs text-red-500">
+              Invalid email or password. Please try again.
+            </p>
+          )}
+
+          {unknownError && (
+            <p className="text-xs text-red-500">
+              An unknown error occurred. Please try again later.
+            </p>
+          )}
+
+          <Button type="submit" disabled={sending}>
+            {sending ? 'Sending...' : 'Send'}
+            {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
+          </Button>
         </Form>
       </div>
     </main>

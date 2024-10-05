@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/node';
 import {
   Form,
   json,
@@ -28,6 +32,21 @@ export const meta: MetaFunction = () => {
     },
   ];
 };
+
+/**
+ * Loader function
+ */
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { supabase } = createSupabaseServerClient(request);
+
+  const { data } = await supabase.auth.getSession();
+
+  if (data.session) {
+    return redirect('/user');
+  }
+
+  return null;
+}
 
 /**
  * Action function

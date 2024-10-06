@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { Form, json, redirect, useLoaderData } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -33,8 +34,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function User() {
   const user = useLoaderData<typeof loader>();
 
-  const firstName = user?.first_name || '';
-  const lastName = user?.last_name || '';
+  let initialFirstName = user?.first_name || '';
+  let initialLastName = user?.last_name || '';
+
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+  const [unchanged, setUnchanged] = useState(true);
+
+  useEffect(() => {
+    if (firstName === initialFirstName && lastName === initialLastName) {
+      setUnchanged(true);
+    } else {
+      setUnchanged(false);
+    }
+  }, [firstName, lastName]);
 
   return (
     <main>
@@ -48,9 +61,10 @@ export default function User() {
             <Input
               id="first-name"
               name="first-name"
-              defaultValue={firstName}
+              value={firstName}
               placeholder="First name..."
               autoComplete="off"
+              onChange={event => setFirstName(event.target.value)}
             />
           </div>
 
@@ -60,13 +74,14 @@ export default function User() {
             <Input
               id="last-name"
               name="last-name"
-              defaultValue={lastName}
+              value={lastName}
               placeholder="Last name..."
               autoComplete="off"
+              onChange={event => setLastName(event.target.value)}
             />
           </div>
 
-          <Button>Save</Button>
+          <Button disabled={unchanged}>Save</Button>
         </Form>
       </Section>
     </main>

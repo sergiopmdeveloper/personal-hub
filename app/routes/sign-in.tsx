@@ -147,6 +147,7 @@ export default function SignIn() {
               })}
               id="email"
               name="email"
+              placeholder="Your email..."
               autoComplete="email"
             />
 
@@ -163,6 +164,7 @@ export default function SignIn() {
               id="password"
               name="password"
               type="password"
+              placeholder="Your password..."
               autoComplete="current-password"
             />
 

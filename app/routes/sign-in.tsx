@@ -147,6 +147,7 @@ export default function SignIn() {
               })}
               id="email"
               name="email"
+              placeholder="Your email..."
               autoComplete="email"
             />
 
@@ -163,6 +164,7 @@ export default function SignIn() {
               id="password"
               name="password"
               type="password"
+              placeholder="Your password..."
               autoComplete="current-password"
             />
 
@@ -187,7 +189,7 @@ export default function SignIn() {
           </p>
 
           <Button type="submit" disabled={sending}>
-            {sending ? 'Sending...' : 'Send'}
+            Send
             {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         </Form>

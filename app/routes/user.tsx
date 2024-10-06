@@ -9,12 +9,15 @@ import {
 } from '@remix-run/react';
 import { Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FormError } from '~/components/global/form-error';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { useToast } from '~/hooks/use-toast';
 import { Section } from '~/layouts/section';
+import { cn } from '~/lib/utils';
 import { createSupabaseServerClient } from '~/supabase/server';
+import { UserSchema } from '~/validation/user';
 
 /**
  * Loader function
@@ -54,6 +57,19 @@ export async function action({ request }: ActionFunctionArgs) {
   const firstName = body.get('first-name') as string;
   const lastName = body.get('last-name') as string;
 
+  const result = UserSchema.safeParse({ firstName, lastName });
+
+  if (!result.success) {
+    return json(
+      {
+        fieldErrors: result.error.flatten().fieldErrors,
+        unknownError: false,
+        updatedUser: null,
+      },
+      { status: 400 }
+    );
+  }
+
   const { error } = await supabase
     .from('users')
     .update({ first_name: firstName, last_name: lastName })
@@ -62,6 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (error) {
     return json(
       {
+        fieldErrors: null,
         unknownError: true,
         updatedUser: null,
       },
@@ -71,6 +88,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return json(
     {
+      fieldErrors: null,
       unknownError: false,
       updatedUser: { firstName: firstName, lastName: lastName },
     },
@@ -94,6 +112,9 @@ export default function User() {
   const [lastName, setLastName] = useState(initialLastName);
   const [unchanged, setUnchanged] = useState(true);
   const sending = state === 'submitting';
+
+  const firstNameErrors = updateUserResponse?.fieldErrors?.firstName;
+  const lastNameErrors = updateUserResponse?.fieldErrors?.lastName;
 
   useEffect(() => {
     if (updateUserResponse?.updatedUser) {
@@ -126,6 +147,9 @@ export default function User() {
             <Label htmlFor="first-name">First name</Label>
 
             <Input
+              className={cn({
+                'border-red-500 focus-visible:ring-0': firstNameErrors,
+              })}
               id="first-name"
               name="first-name"
               value={firstName}
@@ -133,12 +157,17 @@ export default function User() {
               autoComplete="off"
               onChange={event => setFirstName(event.target.value)}
             />
+
+            {firstNameErrors && <FormError>{firstNameErrors[0]}</FormError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="last-name">Last name</Label>
 
             <Input
+              className={cn({
+                'border-red-500 focus-visible:ring-0': lastNameErrors,
+              })}
               id="last-name"
               name="last-name"
               value={lastName}
@@ -146,6 +175,8 @@ export default function User() {
               autoComplete="off"
               onChange={event => setLastName(event.target.value)}
             />
+
+            {lastNameErrors && <FormError>{lastNameErrors[0]}</FormError>}
           </div>
 
           <Button disabled={unchanged || sending}>

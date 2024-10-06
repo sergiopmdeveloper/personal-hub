@@ -139,7 +139,7 @@ export default function User() {
 
   return (
     <main>
-      <Section>
+      <Section className="mt-10">
         <h1 className="text-2xl font-bold">Account details</h1>
 
         <Form className="mt-8 flex flex-col gap-6" method="POST">

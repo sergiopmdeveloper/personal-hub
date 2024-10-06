@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react';
+import { Header } from '~/components/global/header';
 import { Toaster } from '~/components/ui/toaster';
 import './tailwind.css';
 
@@ -40,6 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
 
       <body suppressHydrationWarning>
+        <Header />
         {children}
         <ScrollRestoration />
         <Scripts />

@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from '~/components/ui/sheet';
 import { Section } from '~/layouts/section';
+import { cn } from '~/lib/utils';
 
 /**
  * Header component
@@ -42,11 +43,23 @@ export function Header() {
 
               {location.pathname.startsWith('/user') && (
                 <div className="mt-6 flex flex-col gap-1 text-lg">
-                  <Link to="/user" reloadDocument>
+                  <Link
+                    className={cn({
+                      'font-bold': location.pathname === '/user',
+                    })}
+                    to="/user"
+                    reloadDocument
+                  >
                     User
                   </Link>
 
-                  <Link to="/user/links" reloadDocument>
+                  <Link
+                    className={cn({
+                      'font-bold': location.pathname === '/user/links',
+                    })}
+                    to="/user/links"
+                    reloadDocument
+                  >
                     Links
                   </Link>
                 </div>
@@ -54,15 +67,33 @@ export function Header() {
 
               {!location.pathname.startsWith('/user') && (
                 <div className="mt-6 flex flex-col gap-1 text-lg">
-                  <Link to="/" reloadDocument>
+                  <Link
+                    className={cn({
+                      'font-bold': location.pathname === '/',
+                    })}
+                    to="/"
+                    reloadDocument
+                  >
                     Home
                   </Link>
 
-                  <Link to="/sign-in" reloadDocument>
+                  <Link
+                    className={cn({
+                      'font-bold': location.pathname === '/sign-in',
+                    })}
+                    to="/sign-in"
+                    reloadDocument
+                  >
                     Sign in
                   </Link>
 
-                  <Link to="/sign-up" reloadDocument>
+                  <Link
+                    className={cn({
+                      'font-bold': location.pathname === '/sign-up',
+                    })}
+                    to="/sign-up"
+                    reloadDocument
+                  >
                     Sign up
                   </Link>
                 </div>

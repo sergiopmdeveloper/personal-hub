@@ -19,6 +19,7 @@ import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { useToast } from '~/hooks/use-toast';
+import { Section } from '~/layouts/section';
 import { cn } from '~/lib/utils';
 import { createSupabaseServerClient } from '~/supabase/server';
 import { SignInSchema } from '~/validation/sign-in';
@@ -133,67 +134,71 @@ export default function SignIn() {
   }, [mounted, searchParams]);
 
   return (
-    <main className="flex h-screen w-screen items-center justify-center">
-      <div className="w-[30rem] rounded-md bg-secondary p-6">
-        <h2 className="text-3xl font-bold">Sign in</h2>
+    <Section>
+      <main className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="w-[30rem] rounded-md bg-secondary p-6">
+          <h2 className="text-3xl font-bold">Sign in</h2>
 
-        <Form className="mt-8 flex flex-col gap-6" method="POST">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
+          <Form className="mt-8 flex flex-col gap-6" method="POST">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">Email</Label>
 
-            <Input
-              className={cn({
-                'border-red-500 focus-visible:ring-0': emailErrors,
-              })}
-              id="email"
-              name="email"
-              placeholder="Your email..."
-              autoComplete="email"
-            />
+              <Input
+                className={cn({
+                  'border-red-500 focus-visible:ring-0': emailErrors,
+                })}
+                id="email"
+                name="email"
+                placeholder="Your email..."
+                autoComplete="email"
+              />
 
-            {emailErrors && <FormError>{emailErrors[0]}</FormError>}
-          </div>
+              {emailErrors && <FormError>{emailErrors[0]}</FormError>}
+            </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="password">Password</Label>
 
-            <Input
-              className={cn({
-                'border-red-500 focus-visible:ring-0': passwordErrors,
-              })}
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Your password..."
-              autoComplete="current-password"
-            />
+              <Input
+                className={cn({
+                  'border-red-500 focus-visible:ring-0': passwordErrors,
+                })}
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Your password..."
+                autoComplete="current-password"
+              />
 
-            {passwordErrors && <FormError>{passwordErrors[0]}</FormError>}
-          </div>
+              {passwordErrors && <FormError>{passwordErrors[0]}</FormError>}
+            </div>
 
-          {invalidCredentials && (
-            <FormError>Invalid email or password. Please try again.</FormError>
-          )}
+            {invalidCredentials && (
+              <FormError>
+                Invalid email or password. Please try again.
+              </FormError>
+            )}
 
-          {unknownError && (
-            <FormError>
-              An unknown error occurred. Please try again later.
-            </FormError>
-          )}
+            {unknownError && (
+              <FormError>
+                An unknown error occurred. Please try again later.
+              </FormError>
+            )}
 
-          <p className="text-xs">
-            Don't have an account?{' '}
-            <Link className="text-blue-500 underline" to="/sign-up">
-              Sign up
-            </Link>
-          </p>
+            <p className="text-xs">
+              Don't have an account?{' '}
+              <Link className="text-blue-500 underline" to="/sign-up">
+                Sign up
+              </Link>
+            </p>
 
-          <Button type="submit" disabled={sending}>
-            Send
-            {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
-          </Button>
-        </Form>
-      </div>
-    </main>
+            <Button type="submit" disabled={sending}>
+              Send
+              {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
+            </Button>
+          </Form>
+        </div>
+      </main>
+    </Section>
   );
 }

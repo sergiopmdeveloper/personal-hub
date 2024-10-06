@@ -10,12 +10,15 @@ import {
   redirect,
   useActionData,
   useNavigation,
+  useSearchParams,
 } from '@remix-run/react';
 import { Loader } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { FormError } from '~/components/global/form-error';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { useToast } from '~/hooks/use-toast';
 import { cn } from '~/lib/utils';
 import { createSupabaseServerClient } from '~/supabase/server';
 import { SignInSchema } from '~/validation/sign-in';
@@ -100,12 +103,34 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function SignIn() {
   const { state } = useNavigation();
   const actionData = useActionData<typeof action>();
+  const [mounted, setMounted] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { toast } = useToast();
 
   const sending = state === 'submitting';
   const emailErrors = actionData?.fieldErrors?.email;
   const passwordErrors = actionData?.fieldErrors?.password;
   const invalidCredentials = actionData?.invalidCredentials;
   const unknownError = actionData?.unknownError;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && searchParams.get('unauthorized')) {
+      toast({
+        title: 'Forbidden',
+        description: 'Sign in first to access your account',
+        variant: 'destructive',
+      });
+
+      setSearchParams(searchParams => {
+        searchParams.delete('unauthorized');
+        return searchParams;
+      });
+    }
+  }, [mounted, searchParams]);
 
   return (
     <main className="flex h-screen w-screen items-center justify-center">

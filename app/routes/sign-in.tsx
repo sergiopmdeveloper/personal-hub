@@ -189,7 +189,7 @@ export default function SignIn() {
           </p>
 
           <Button type="submit" disabled={sending}>
-            {sending ? 'Sending...' : 'Send'}
+            Send
             {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         </Form>

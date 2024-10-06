@@ -1,9 +1,18 @@
-import type { LoaderFunctionArgs } from '@remix-run/node';
-import { Form, json, redirect, useLoaderData } from '@remix-run/react';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  Form,
+  json,
+  redirect,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from '@remix-run/react';
+import { Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { useToast } from '~/hooks/use-toast';
 import { Section } from '~/layouts/section';
 import { createSupabaseServerClient } from '~/supabase/server';
 
@@ -29,10 +38,54 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 /**
+ * Action function
+ */
+export async function action({ request }: ActionFunctionArgs) {
+  const { supabase } = createSupabaseServerClient(request);
+
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    return redirect('/sign-in?unauthorized=true');
+  }
+
+  const body = await request.formData();
+
+  const firstName = body.get('first-name') as string;
+  const lastName = body.get('last-name') as string;
+
+  const { error } = await supabase
+    .from('users')
+    .update({ first_name: firstName, last_name: lastName })
+    .eq('email', data.user.email);
+
+  if (error) {
+    return json(
+      {
+        unknownError: true,
+        updatedUser: null,
+      },
+      { status: 520 }
+    );
+  }
+
+  return json(
+    {
+      unknownError: false,
+      updatedUser: { firstName: firstName, lastName: lastName },
+    },
+    { status: 200 }
+  );
+}
+
+/**
  * User page
  */
 export default function User() {
   const user = useLoaderData<typeof loader>();
+  const updateUserResponse = useActionData<typeof action>();
+  const { state } = useNavigation();
+  const { toast } = useToast();
 
   let initialFirstName = user?.first_name || '';
   let initialLastName = user?.last_name || '';
@@ -40,6 +93,20 @@ export default function User() {
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
   const [unchanged, setUnchanged] = useState(true);
+  const sending = state === 'submitting';
+
+  useEffect(() => {
+    if (updateUserResponse?.updatedUser) {
+      setUnchanged(true);
+      initialFirstName = updateUserResponse.updatedUser.firstName;
+      initialLastName = updateUserResponse.updatedUser.lastName;
+
+      toast({
+        title: 'Updated',
+        description: 'The details of your account have been updated',
+      });
+    }
+  }, [updateUserResponse]);
 
   useEffect(() => {
     if (firstName === initialFirstName && lastName === initialLastName) {
@@ -81,7 +148,9 @@ export default function User() {
             />
           </div>
 
-          <Button disabled={unchanged}>Save</Button>
+          <Button disabled={unchanged || sending}>
+            Save {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
+          </Button>
         </Form>
       </Section>
     </main>

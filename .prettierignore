@@ -4,3 +4,6 @@ package-lock.json
 
 # UI components
 app/components/ui
+
+# UI component hooks
+app/hooks/use-toast.ts

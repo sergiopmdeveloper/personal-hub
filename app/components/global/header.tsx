@@ -25,8 +25,8 @@ export function Header() {
 
         <div className="flex gap-2">
           {location.pathname.startsWith('/user') && (
-            <Form method="POST" action="/logout">
-              <Button variant="destructive">Logout</Button>
+            <Form method="POST" action="/sign-out">
+              <Button variant="destructive">Sign out</Button>
             </Form>
           )}
 

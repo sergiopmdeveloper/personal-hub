@@ -1,4 +1,4 @@
-import { Link, useLocation } from '@remix-run/react';
+import { Form, Link, useLocation } from '@remix-run/react';
 import { Menu } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import {
@@ -25,7 +25,9 @@ export function Header() {
 
         <div className="flex gap-2">
           {location.pathname.startsWith('/user') && (
-            <Button variant="destructive">Logout</Button>
+            <Form method="POST" action="/logout">
+              <Button variant="destructive">Logout</Button>
+            </Form>
           )}
 
           <Sheet>

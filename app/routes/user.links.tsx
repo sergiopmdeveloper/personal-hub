@@ -1,5 +1,14 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
-import { json, redirect, useLoaderData } from '@remix-run/react';
+import { json, Link, redirect, useLoaderData } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table';
 import { Section } from '~/layouts/section';
 import { createSupabaseServerClient } from '~/supabase/server';
 
@@ -36,9 +45,32 @@ export default function UserLinks() {
       <Section className="mt-10">
         <h1 className="text-2xl font-bold">Links</h1>
 
-        {data.linkGroups.map((linkGroup, index) => (
-          <span key={index}>{linkGroup}</span>
-        ))}
+        <Table className="mt-8">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Link group</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {data.linkGroups.map((linkGroup, index) => (
+              <TableRow key={index}>
+                <TableCell>{linkGroup}</TableCell>
+
+                <TableCell>
+                  <div className="flex justify-end gap-1">
+                    <Link to={`/user/links/${linkGroup}`}>
+                      <Button>Edit</Button>
+                    </Link>
+
+                    <Button variant="destructive">Delete</Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </Section>
     </main>
   );

@@ -46,7 +46,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .select('id, link_group')
     .eq('user_email', auth.user.email);
 
-  const linkGroups = Array.from(new Set(links?.map(link => link.link_group)));
+  const linkGroupCounts = links?.reduce(
+    (acc, link) => {
+      acc[link.link_group] = (acc[link.link_group] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const linkGroups = Object.entries(linkGroupCounts || {}).map(
+    ([group, count]) => ({
+      group,
+      count,
+    })
+  );
 
   return json({ linkGroups }, { status: 200 });
 }
@@ -76,7 +89,14 @@ export default function UserLinks() {
           <TableBody>
             {data.linkGroups.map((linkGroup, index) => (
               <TableRow key={index}>
-                <TableCell>{linkGroup}</TableCell>
+                <TableCell>
+                  <h3 className="relative w-fit">
+                    {linkGroup.group}{' '}
+                    <span className="absolute -right-7 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                      {linkGroup.count}
+                    </span>
+                  </h3>
+                </TableCell>
 
                 <TableCell>
                   <div className="flex justify-end gap-1">
@@ -102,8 +122,8 @@ export default function UserLinks() {
 
                           <AlertDialogDescription>
                             You are going to delete the link group{' '}
-                            <strong>{linkGroup}</strong>. This action cannot be
-                            undone. Are you sure you want to proceed?
+                            <strong>{linkGroup.group}</strong>. This action
+                            cannot be undone. Are you sure you want to proceed?
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -116,7 +136,7 @@ export default function UserLinks() {
                             <input
                               type="hidden"
                               name="link-group"
-                              value={linkGroup}
+                              value={linkGroup.group}
                             />
 
                             <Button variant="destructive" disabled={sending}>

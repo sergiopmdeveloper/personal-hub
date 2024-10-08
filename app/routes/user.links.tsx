@@ -100,7 +100,7 @@ export default function UserLinks() {
 
                 <TableCell>
                   <div className="flex justify-end gap-1">
-                    <Link to={`/user/links/${linkGroup}`}>
+                    <Link to={`/user/links/${linkGroup.group}`}>
                       <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary transition-colors hover:bg-primary/90">
                         <Edit className="text-primary-foreground" size={16} />
                       </div>

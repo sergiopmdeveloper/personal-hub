@@ -1,5 +1,12 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
-import { json, Link, redirect, useLoaderData } from '@remix-run/react';
+import {
+  json,
+  Link,
+  redirect,
+  useFetcher,
+  useLoaderData,
+} from '@remix-run/react';
+import { Loader } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import {
   Table,
@@ -39,6 +46,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
  */
 export default function UserLinks() {
   const data = useLoaderData<typeof loader>();
+  let fetcher = useFetcher();
+
+  const sending = fetcher.state === 'submitting';
 
   return (
     <main>
@@ -64,7 +74,20 @@ export default function UserLinks() {
                       <Button>Edit</Button>
                     </Link>
 
-                    <Button variant="destructive">Delete</Button>
+                    <fetcher.Form method="post" action="/delete-link-group">
+                      <input
+                        type="hidden"
+                        name="link-group"
+                        value={linkGroup}
+                      />
+
+                      <Button variant="destructive" disabled={sending}>
+                        Delete
+                        {sending && (
+                          <Loader className="ml-2 h-4 w-4 animate-spin" />
+                        )}
+                      </Button>
+                    </fetcher.Form>
                   </div>
                 </TableCell>
               </TableRow>

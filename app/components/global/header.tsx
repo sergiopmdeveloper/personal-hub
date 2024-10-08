@@ -1,4 +1,4 @@
-import { Form, Link, useLocation, useNavigation } from '@remix-run/react';
+import { Link, useFetcher, useLocation } from '@remix-run/react';
 import { Loader, Menu } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import {
@@ -16,10 +16,10 @@ import { cn } from '~/lib/utils';
  * Header component
  */
 export function Header() {
-  const { state } = useNavigation();
   const location = useLocation();
+  const fetcher = useFetcher();
 
-  const sending = state === 'submitting';
+  const sending = fetcher.state === 'submitting';
 
   return (
     <Section className="sticky top-0 z-50 bg-secondary">
@@ -28,12 +28,12 @@ export function Header() {
 
         <div className="flex gap-2">
           {location.pathname.startsWith('/user') && (
-            <Form method="POST" action="/sign-out">
+            <fetcher.Form method="POST" action="/sign-out">
               <Button variant="destructive" disabled={sending}>
                 Sign out
                 {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
               </Button>
-            </Form>
+            </fetcher.Form>
           )}
 
           <Sheet>

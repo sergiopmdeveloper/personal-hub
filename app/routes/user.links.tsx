@@ -6,7 +6,17 @@ import {
   useFetcher,
   useLoaderData,
 } from '@remix-run/react';
-import { Loader } from 'lucide-react';
+import { Edit, Loader, Trash } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import {
   Table,
@@ -71,23 +81,54 @@ export default function UserLinks() {
                 <TableCell>
                   <div className="flex justify-end gap-1">
                     <Link to={`/user/links/${linkGroup}`}>
-                      <Button>Edit</Button>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary transition-colors hover:bg-primary/90">
+                        <Edit className="text-primary-foreground" size={16} />
+                      </div>
                     </Link>
 
-                    <fetcher.Form method="post" action="/delete-link-group">
-                      <input
-                        type="hidden"
-                        name="link-group"
-                        value={linkGroup}
-                      />
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-destructive transition-colors hover:bg-destructive/90">
+                          <Trash
+                            className="text-primary-foreground"
+                            size={16}
+                          />
+                        </div>
+                      </AlertDialogTrigger>
 
-                      <Button variant="destructive" disabled={sending}>
-                        Delete
-                        {sending && (
-                          <Loader className="ml-2 h-4 w-4 animate-spin" />
-                        )}
-                      </Button>
-                    </fetcher.Form>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Warning</AlertDialogTitle>
+
+                          <AlertDialogDescription>
+                            You are going to delete the link group{' '}
+                            <strong>{linkGroup}</strong>. This action cannot be
+                            undone. Are you sure you want to proceed?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                          <fetcher.Form
+                            method="post"
+                            action="/delete-link-group"
+                          >
+                            <input
+                              type="hidden"
+                              name="link-group"
+                              value={linkGroup}
+                            />
+
+                            <Button variant="destructive" disabled={sending}>
+                              Delete
+                              {sending && (
+                                <Loader className="ml-2 h-4 w-4 animate-spin" />
+                              )}
+                            </Button>
+                          </fetcher.Form>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </TableRow>

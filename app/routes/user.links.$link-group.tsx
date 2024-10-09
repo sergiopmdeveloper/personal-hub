@@ -8,6 +8,14 @@ import {
 } from '@remix-run/react';
 import { Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Section } from '~/layouts/section';
@@ -69,7 +77,21 @@ export default function LinkGroup() {
   return (
     <main>
       <Section className="mt-10">
-        <div className="flex items-center justify-between">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Links</BreadcrumbLink>
+            </BreadcrumbItem>
+
+            <BreadcrumbSeparator />
+
+            <BreadcrumbItem>
+              <BreadcrumbPage>{linkGroup}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <div className="mt-10 flex items-center justify-between">
           <h1 className="text-2xl font-bold">{linkGroup}</h1>
 
           <div

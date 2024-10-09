@@ -6,6 +6,8 @@ import {
   useLoaderData,
   useParams,
 } from '@remix-run/react';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Section } from '~/layouts/section';
@@ -42,11 +44,33 @@ export default function LinkGroup() {
   const params = useParams();
 
   const linkGroup = params['link-group'];
+  const [links, setLinks] = useState(data || []);
+
+  /**
+   * Add new empty link
+   */
+  const addNewEmptyLink = () => {
+    const newLink = {
+      id: `new-${Date.now()}`,
+      link: '',
+    };
+
+    setLinks([...links, newLink]);
+  };
 
   return (
     <main>
       <Section className="mt-10">
-        <h1 className="text-2xl font-bold">{linkGroup}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">{linkGroup}</h1>
+
+          <div
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-primary transition-colors hover:bg-primary/90"
+            onClick={addNewEmptyLink}
+          >
+            <Plus className="text-primary-foreground" size={15} />
+          </div>
+        </div>
 
         <Form className="mt-8" method="post">
           <div className="flex flex-col gap-2">
@@ -57,7 +81,7 @@ export default function LinkGroup() {
               hidden
             />
 
-            {data?.map(link => (
+            {links.map(link => (
               <Input
                 id={link.id}
                 name={link.id}

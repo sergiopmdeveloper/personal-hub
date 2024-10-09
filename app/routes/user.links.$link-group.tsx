@@ -6,7 +6,7 @@ import {
   useLoaderData,
   useParams,
 } from '@remix-run/react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -47,15 +47,23 @@ export default function LinkGroup() {
   const [links, setLinks] = useState(data || []);
 
   /**
-   * Add new empty link
+   * Adds a new empty link
    */
   const addNewEmptyLink = () => {
     const newLink = {
-      id: `new-${Date.now()}`,
+      id: `new-link-${Date.now()}`,
       link: '',
     };
 
     setLinks([...links, newLink]);
+  };
+
+  /**
+   * Deletes a link
+   * @param {string} id - The link id
+   */
+  const deleteLink = (id: string) => {
+    setLinks(links.filter(link => link.id !== id));
   };
 
   return (
@@ -82,12 +90,21 @@ export default function LinkGroup() {
             />
 
             {links.map(link => (
-              <Input
-                id={link.id}
-                name={link.id}
-                defaultValue={link.link}
-                key={link.id}
-              />
+              <div key={link.id} className="flex items-center gap-2">
+                <Input
+                  id={link.id}
+                  name={link.id}
+                  defaultValue={link.link}
+                  className="flex-grow"
+                />
+
+                <div
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md bg-destructive transition-colors hover:bg-destructive/90"
+                  onClick={() => deleteLink(link.id)}
+                >
+                  <Trash className="text-primary-foreground" size={16} />
+                </div>
+              </div>
             ))}
           </div>
 

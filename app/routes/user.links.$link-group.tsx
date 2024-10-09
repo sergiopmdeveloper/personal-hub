@@ -7,7 +7,7 @@ import {
   useParams,
 } from '@remix-run/react';
 import { Plus, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -52,7 +52,13 @@ export default function LinkGroup() {
   const params = useParams();
 
   const linkGroup = params['link-group'];
+  const [initialLinks] = useState(data || []);
   const [links, setLinks] = useState(data || []);
+  const [changed, setChanged] = useState(false);
+
+  useEffect(() => {
+    checkForLinkChanges();
+  }, [links]);
 
   /**
    * Adds a new empty link
@@ -74,13 +80,40 @@ export default function LinkGroup() {
     setLinks(links.filter(link => link.id !== id));
   };
 
+  /**
+   * Handles the link change
+   * @param {string} id - The link id
+   * @param {string} value - The link value
+   */
+  const handleLinkChange = (id: string, value: string) => {
+    setLinks(
+      links.map(link => (link.id === id ? { ...link, link: value } : link))
+    );
+  };
+
+  /**
+   * Checks if there are changes in the links
+   */
+  const checkForLinkChanges = () => {
+    if (links.length !== initialLinks.length) {
+      setChanged(true);
+      return;
+    }
+
+    const hasContentChanges = links.some((link, index) => {
+      return link.link !== initialLinks[index].link;
+    });
+
+    setChanged(hasContentChanges);
+  };
+
   return (
     <main>
       <Section className="mt-10">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Links</BreadcrumbLink>
+              <BreadcrumbLink href="/user/links">Links</BreadcrumbLink>
             </BreadcrumbItem>
 
             <BreadcrumbSeparator />
@@ -116,7 +149,8 @@ export default function LinkGroup() {
                 <Input
                   id={link.id}
                   name={link.id}
-                  defaultValue={link.link}
+                  value={link.link}
+                  onChange={e => handleLinkChange(link.id, e.target.value)}
                   className="flex-grow"
                 />
 
@@ -130,7 +164,7 @@ export default function LinkGroup() {
             ))}
           </div>
 
-          <Button className="mt-8" disabled>
+          <Button className="mt-8" disabled={!changed}>
             Save
           </Button>
         </Form>

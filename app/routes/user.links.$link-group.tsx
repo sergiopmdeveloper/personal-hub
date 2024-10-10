@@ -21,6 +21,7 @@ import {
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
+import { useToast } from '~/hooks/use-toast';
 import { Section } from '~/layouts/section';
 import { createSupabaseServerClient } from '~/supabase/server';
 
@@ -95,6 +96,7 @@ export default function LinkGroup() {
   const params = useParams();
   const data = useLoaderData<typeof loader>();
   const { state } = useNavigation();
+  const { toast } = useToast();
   let actionData = useActionData<typeof action>();
 
   const linkGroup = params['link-group'];
@@ -108,6 +110,12 @@ export default function LinkGroup() {
       setChanged(false);
       setInitialLinks(links);
       actionData.success = false;
+
+      toast({
+        title: 'Updated',
+        description: 'The links have been updated',
+      });
+
       return;
     }
 

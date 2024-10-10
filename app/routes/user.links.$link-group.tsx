@@ -1,13 +1,16 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
   Form,
   json,
   redirect,
+  useActionData,
   useLoaderData,
+  useNavigation,
   useParams,
 } from '@remix-run/react';
-import { Plus, Trash } from 'lucide-react';
+import { Loader, Plus, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FormError } from '~/components/global/form-error';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,8 +28,6 @@ import { createSupabaseServerClient } from '~/supabase/server';
  * Loader function
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const linkGroup = params['link-group'];
-
   const { supabase } = createSupabaseServerClient(request);
 
   const { data: auth } = await supabase.auth.getUser();
@@ -34,6 +35,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!auth.user) {
     return redirect('/sign-in?unauthorized=true');
   }
+
+  const linkGroup = params['link-group'];
 
   const { data: links } = await supabase
     .from('links')
@@ -45,20 +48,71 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 /**
+ * Action function
+ */
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { supabase } = createSupabaseServerClient(request);
+
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    return redirect('/sign-in?unauthorized=true');
+  }
+
+  const body = await request.formData();
+  const linkGroup = params['link-group'];
+
+  const atLeastOneEmptyLink = Array.from(body.values()).some(
+    value => value === ''
+  );
+
+  if (atLeastOneEmptyLink) {
+    return json(
+      { error: 'At least one link is empty.', success: false },
+      { status: 400 }
+    );
+  }
+
+  await supabase.from('links').delete().eq('link_group', linkGroup);
+
+  body.forEach(async value => {
+    await supabase.from('links').insert([
+      {
+        user_email: data.user.email,
+        link_group: linkGroup,
+        link: value,
+      },
+    ]);
+  });
+
+  return json({ error: null, success: true }, { status: 200 });
+}
+
+/**
  * Link group component
  */
 export default function LinkGroup() {
-  const data = useLoaderData<typeof loader>();
   const params = useParams();
+  const data = useLoaderData<typeof loader>();
+  const { state } = useNavigation();
+  let actionData = useActionData<typeof action>();
 
   const linkGroup = params['link-group'];
-  const [initialLinks] = useState(data || []);
+  const [initialLinks, setInitialLinks] = useState(data || []);
   const [links, setLinks] = useState(data || []);
   const [changed, setChanged] = useState(false);
+  const sending = state === 'submitting';
 
   useEffect(() => {
+    if (actionData?.success) {
+      setChanged(false);
+      setInitialLinks(links);
+      actionData.success = false;
+      return;
+    }
+
     checkForLinkChanges();
-  }, [links]);
+  }, [links, actionData]);
 
   /**
    * Adds a new empty link
@@ -100,11 +154,11 @@ export default function LinkGroup() {
       return;
     }
 
-    const hasContentChanges = links.some((link, index) => {
+    const linksHaveChanged = links.some((link, index) => {
       return link.link !== initialLinks[index].link;
     });
 
-    setChanged(hasContentChanges);
+    setChanged(linksHaveChanged);
   };
 
   return (
@@ -137,13 +191,6 @@ export default function LinkGroup() {
 
         <Form className="mt-8" method="post">
           <div className="flex flex-col gap-2">
-            <input
-              id="link-group"
-              name="link-group"
-              defaultValue={linkGroup}
-              hidden
-            />
-
             {links.map(link => (
               <div key={link.id} className="flex items-center gap-2">
                 <Input
@@ -164,8 +211,13 @@ export default function LinkGroup() {
             ))}
           </div>
 
-          <Button className="mt-8" disabled={!changed}>
+          {actionData?.error && (
+            <FormError className="mt-8">{actionData.error}</FormError>
+          )}
+
+          <Button className="mt-8" disabled={!changed || sending}>
             Save
+            {sending && <Loader className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         </Form>
       </Section>

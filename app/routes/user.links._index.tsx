@@ -43,7 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { data: links } = await supabase
     .from('links')
-    .select('id, link_group')
+    .select('link_group')
     .eq('user_email', auth.user.email);
 
   const linkGroupCounts = links?.reduce(

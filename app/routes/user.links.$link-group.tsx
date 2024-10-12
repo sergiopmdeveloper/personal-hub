@@ -21,6 +21,13 @@ import {
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select';
 import { useToast } from '~/hooks/use-toast';
 import { Section } from '~/layouts/section';
 import { createSupabaseServerClient } from '~/supabase/server';
@@ -199,6 +206,8 @@ export default function LinkGroup() {
 
         <Form className="mt-8" method="post">
           <div className="flex flex-col gap-2">
+            <h2 className="italic">Links</h2>
+
             {links.map(link => (
               <div key={link.id} className="flex items-center gap-2">
                 <Input
@@ -217,6 +226,18 @@ export default function LinkGroup() {
                 </div>
               </div>
             ))}
+
+            <h2 className="mt-4 italic">Template</h2>
+
+            <Select>
+              <SelectTrigger>
+                <SelectValue defaultValue="basic" placeholder="Basic" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="basic">Basic</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {actionData?.error && (

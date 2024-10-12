@@ -52,7 +52,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     .eq('user_email', auth.user.email)
     .eq('link_group', linkGroup);
 
-  return json(links, { status: 200 });
+  const { data: linkGroupTemplate } = await supabase
+    .from('link_templates')
+    .select('template')
+    .eq('link_group', linkGroup)
+    .single();
+
+  return json(
+    { links: links, template: linkGroupTemplate?.template },
+    { status: 200 }
+  );
 }
 
 /**
@@ -107,8 +116,10 @@ export default function LinkGroup() {
   let actionData = useActionData<typeof action>();
 
   const linkGroup = params['link-group'];
-  const [initialLinks, setInitialLinks] = useState(data || []);
-  const [links, setLinks] = useState(data || []);
+  const [initialLinks, setInitialLinks] = useState(data.links || []);
+  const [initialTemplate, setInitialTemplate] = useState(data.template || '');
+  const [links, setLinks] = useState(data.links || []);
+  const [template, setTemplate] = useState(data.template || '');
   const [changed, setChanged] = useState(false);
   const sending = state === 'submitting';
 
@@ -116,6 +127,7 @@ export default function LinkGroup() {
     if (actionData?.success) {
       setChanged(false);
       setInitialLinks(links);
+      setInitialTemplate(template);
       actionData.success = false;
 
       toast({
@@ -126,8 +138,8 @@ export default function LinkGroup() {
       return;
     }
 
-    checkForLinkChanges();
-  }, [links, actionData]);
+    checkForChanges();
+  }, [links, template, actionData]);
 
   /**
    * Adds a new empty link
@@ -161,9 +173,9 @@ export default function LinkGroup() {
   };
 
   /**
-   * Checks if there are changes in the links
+   * Checks if there are any changes
    */
-  const checkForLinkChanges = () => {
+  const checkForChanges = () => {
     if (links.length !== initialLinks.length) {
       setChanged(true);
       return;
@@ -173,7 +185,9 @@ export default function LinkGroup() {
       return link.link !== initialLinks[index].link;
     });
 
-    setChanged(linksHaveChanged);
+    const templateHasChanged = template !== initialTemplate;
+
+    setChanged(linksHaveChanged || templateHasChanged);
   };
 
   return (
@@ -229,13 +243,19 @@ export default function LinkGroup() {
 
             <h2 className="mt-4 italic">Template</h2>
 
-            <Select>
+            <Select onValueChange={template => setTemplate(template)}>
               <SelectTrigger>
-                <SelectValue defaultValue="basic" placeholder="Basic" />
+                <SelectValue
+                  defaultValue={template}
+                  placeholder={
+                    template.charAt(0).toUpperCase() + template.slice(1)
+                  }
+                />
               </SelectTrigger>
 
               <SelectContent>
                 <SelectItem value="basic">Basic</SelectItem>
+                <SelectItem value="punk">Punk</SelectItem>
               </SelectContent>
             </Select>
           </div>

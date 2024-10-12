@@ -55,6 +55,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { data: linkGroupTemplate } = await supabase
     .from('link_templates')
     .select('template')
+    .eq('user_email', auth.user.email)
     .eq('link_group', linkGroup)
     .single();
 
@@ -79,6 +80,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const body = await request.formData();
   const linkGroup = params['link-group'];
 
+  const template = body.get('template');
+
+  body.delete('template');
+
   const atLeastOneEmptyLink = Array.from(body.values()).some(
     value => value === ''
   );
@@ -90,7 +95,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
     );
   }
 
-  await supabase.from('links').delete().eq('link_group', linkGroup);
+  await supabase
+    .from('links')
+    .delete()
+    .eq('user_email', data.user.email)
+    .eq('link_group', linkGroup);
 
   body.forEach(async value => {
     await supabase.from('links').insert([
@@ -101,6 +110,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
       },
     ]);
   });
+
+  await supabase
+    .from('link_templates')
+    .delete()
+    .eq('user_email', data.user.email)
+    .eq('link_group', linkGroup);
+
+  await supabase.from('link_templates').insert([
+    {
+      user_email: data.user.email,
+      link_group: linkGroup,
+      template: template,
+    },
+  ]);
 
   return json({ error: null, success: true }, { status: 200 });
 }
@@ -243,10 +266,13 @@ export default function LinkGroup() {
 
             <h2 className="mt-4 italic">Template</h2>
 
-            <Select onValueChange={template => setTemplate(template)}>
+            <Select
+              name="template"
+              defaultValue={template}
+              onValueChange={template => setTemplate(template)}
+            >
               <SelectTrigger>
                 <SelectValue
-                  defaultValue={template}
                   placeholder={
                     template.charAt(0).toUpperCase() + template.slice(1)
                   }

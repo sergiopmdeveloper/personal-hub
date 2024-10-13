@@ -6,7 +6,7 @@ import {
   useFetcher,
   useLoaderData,
 } from '@remix-run/react';
-import { Edit, Loader, Trash } from 'lucide-react';
+import { Edit, Loader, Plus, Trash } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -18,6 +18,16 @@ import {
   AlertDialogTrigger,
 } from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
 import {
   Table,
   TableBody,
@@ -76,7 +86,41 @@ export default function UserLinks() {
   return (
     <main>
       <Section className="mt-10">
-        <h1 className="text-2xl font-bold">Links</h1>
+        <div className="mt-10 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Links</h1>
+
+          <Dialog>
+            <DialogTrigger>
+              <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-primary transition-colors hover:bg-primary/90">
+                <Plus className="text-primary-foreground" size={15} />
+              </div>
+            </DialogTrigger>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>New link group</DialogTitle>
+
+                <DialogDescription>
+                  Create a new link group and start adding links to it
+                </DialogDescription>
+
+                <fetcher.Form className="!mt-4">
+                  <div className="flex flex-col gap-3">
+                    <Label htmlFor="link-group">Name</Label>
+
+                    <Input
+                      id="link-group"
+                      name="link-group"
+                      placeholder="The link group name..."
+                    />
+                  </div>
+
+                  <Button className="mt-4">Create</Button>
+                </fetcher.Form>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <Table className="mt-8">
           <TableHeader>

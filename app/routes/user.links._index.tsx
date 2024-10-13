@@ -156,75 +156,86 @@ export default function UserLinks() {
           </TableHeader>
 
           <TableBody>
-            {data.linkGroups.map((linkGroup, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <h3 className="relative w-fit">
-                    {linkGroup.group}{' '}
-                    <span className="absolute -right-7 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {linkGroup.count}
-                    </span>
-                  </h3>
-                </TableCell>
+            {data.linkGroups.length > 0 ? (
+              data.linkGroups.map((linkGroup, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <h3 className="relative w-fit">
+                      {linkGroup.group}{' '}
+                      <span className="absolute -right-7 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                        {linkGroup.count}
+                      </span>
+                    </h3>
+                  </TableCell>
 
-                <TableCell>
-                  <div className="flex justify-end gap-1">
-                    <Link to={`/user/links/${linkGroup.group}`}>
-                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary transition-colors hover:bg-primary/90">
-                        <Edit className="text-primary-foreground" size={16} />
-                      </div>
-                    </Link>
-
-                    <AlertDialog>
-                      <AlertDialogTrigger>
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-destructive transition-colors hover:bg-destructive/90">
-                          <Trash
-                            className="text-primary-foreground"
-                            size={16}
-                          />
+                  <TableCell>
+                    <div className="flex justify-end gap-1">
+                      <Link to={`/user/links/${linkGroup.group}`}>
+                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary transition-colors hover:bg-primary/90">
+                          <Edit className="text-primary-foreground" size={16} />
                         </div>
-                      </AlertDialogTrigger>
+                      </Link>
 
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Warning</AlertDialogTitle>
-
-                          <AlertDialogDescription>
-                            You are going to delete the link group{' '}
-                            <strong>{linkGroup.group}</strong>. This action
-                            cannot be undone. Are you sure you want to proceed?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-                          <fetcher.Form
-                            method="post"
-                            action="/delete-link-group"
-                          >
-                            <input
-                              type="hidden"
-                              name="link-group"
-                              value={linkGroup.group}
+                      <AlertDialog>
+                        <AlertDialogTrigger>
+                          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-destructive transition-colors hover:bg-destructive/90">
+                            <Trash
+                              className="text-primary-foreground"
+                              size={16}
                             />
+                          </div>
+                        </AlertDialogTrigger>
 
-                            <Button
-                              variant="destructive"
-                              disabled={deletingLinkGroup}
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Warning</AlertDialogTitle>
+
+                            <AlertDialogDescription>
+                              You are going to delete the link group{' '}
+                              <strong>{linkGroup.group}</strong>. This action
+                              cannot be undone. Are you sure you want to
+                              proceed?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                            <fetcher.Form
+                              method="post"
+                              action="/delete-link-group"
                             >
-                              Delete
-                              {deletingLinkGroup && (
-                                <Loader className="ml-2 h-4 w-4 animate-spin" />
-                              )}
-                            </Button>
-                          </fetcher.Form>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                              <input
+                                type="hidden"
+                                name="link-group"
+                                value={linkGroup.group}
+                              />
+
+                              <Button
+                                variant="destructive"
+                                disabled={deletingLinkGroup}
+                              >
+                                Delete
+                                {deletingLinkGroup && (
+                                  <Loader className="ml-2 h-4 w-4 animate-spin" />
+                                )}
+                              </Button>
+                            </fetcher.Form>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell className="pt-4" colSpan={2}>
+                  <p className="text-center text-gray-500">
+                    No link groups found
+                  </p>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </Section>

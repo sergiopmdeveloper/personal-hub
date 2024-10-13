@@ -7,6 +7,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import { Edit, Loader, Plus, Trash } from 'lucide-react';
+import { FormError } from '~/components/global/form-error';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -37,6 +38,7 @@ import {
   TableRow,
 } from '~/components/ui/table';
 import { Section } from '~/layouts/section';
+import { cn } from '~/lib/utils';
 import { createSupabaseServerClient } from '~/supabase/server';
 
 /**
@@ -79,9 +81,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
  */
 export default function UserLinks() {
   const data = useLoaderData<typeof loader>();
-  let fetcher = useFetcher();
+  let fetcher = useFetcher<FetcherData>();
 
-  const sending = fetcher.state === 'submitting';
+  const deletingLinkGroup =
+    fetcher.state === 'submitting' &&
+    fetcher.formAction === '/delete-link-group';
+
+  const creatingLinkGroup =
+    fetcher.state === 'submitting' &&
+    fetcher.formAction === '/create-link-group';
 
   return (
     <main>
@@ -104,18 +112,35 @@ export default function UserLinks() {
                   Create a new link group and start adding links to it
                 </DialogDescription>
 
-                <fetcher.Form className="!mt-4">
+                <fetcher.Form
+                  className="!mt-4"
+                  method="post"
+                  action="/create-link-group"
+                >
                   <div className="flex flex-col gap-3">
                     <Label htmlFor="link-group">Name</Label>
 
                     <Input
+                      className={cn({
+                        'border-red-500 focus-visible:ring-0':
+                          fetcher.data?.createLinkGroupError,
+                      })}
                       id="link-group"
                       name="link-group"
                       placeholder="The link group name..."
                     />
+
+                    {fetcher.data?.createLinkGroupError && (
+                      <FormError>{fetcher.data.createLinkGroupError}</FormError>
+                    )}
                   </div>
 
-                  <Button className="mt-4">Create</Button>
+                  <Button className="mt-4" disabled={creatingLinkGroup}>
+                    Delete
+                    {creatingLinkGroup && (
+                      <Loader className="ml-2 h-4 w-4 animate-spin" />
+                    )}
+                  </Button>
                 </fetcher.Form>
               </DialogHeader>
             </DialogContent>
@@ -183,9 +208,12 @@ export default function UserLinks() {
                               value={linkGroup.group}
                             />
 
-                            <Button variant="destructive" disabled={sending}>
+                            <Button
+                              variant="destructive"
+                              disabled={deletingLinkGroup}
+                            >
                               Delete
-                              {sending && (
+                              {deletingLinkGroup && (
                                 <Loader className="ml-2 h-4 w-4 animate-spin" />
                               )}
                             </Button>
@@ -203,3 +231,10 @@ export default function UserLinks() {
     </main>
   );
 }
+
+/**
+ * Fetcher data type
+ */
+type FetcherData = {
+  createLinkGroupError?: string;
+};
